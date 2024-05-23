@@ -320,6 +320,13 @@ const Surface_Of_Revolution = defs.Surface_Of_Revolution =
         }
     }
 
+const Platform = defs.Platform =
+    class Platform extends Surface_Of_Revolution {
+        // An open tube shape with equally sized sections, pointing down Z locally.
+        constructor(rows, columns, texture_range) {
+            super(rows, columns, Vector3.cast([1, 0, .5], [1, 0, -.5]), texture_range);
+        }
+    }
 
 const Regular_2D_Polygon = defs.Regular_2D_Polygon =
     class Regular_2D_Polygon extends Surface_Of_Revolution {
