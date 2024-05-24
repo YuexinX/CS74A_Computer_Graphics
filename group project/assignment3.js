@@ -21,73 +21,100 @@ export class Assignment3 extends Scene {
             //        (Requirement 1)
             piler: new defs.Capped_Cylinder(20,20),
             platForm: new defs.Capped_Cylinder(20,20),
+            //platForm: new defs.Fan_Shaped_Cylinder(20, 20),
             addOn: new defs.Capped_Cylinder(20,20),
-            cube: new defs.Cube()
+            cube: new defs.Cube(),
+            test: new defs.Cone_Tip(100,100),
+            fan: new defs.Fan_Shape(Math.PI / 3, 20),
         };
 
         // *** Materials
         this.materials = {
             test: new Material(new defs.Phong_Shader(),
-                {ambient: 0.4, diffusivity: 0.6, color: hex_color("#ffffff"), specularity: 0}),
+                {ambient: 1, diffusivity: 0.6, color: hex_color("#ffffff"), specularity: 0}),
             test2: new Material(new Gouraud_Shader(),
                 {ambient: .4, diffusivity: .6, color: hex_color("#992828")}),
             ring: new Material(new Ring_Shader()),
             // TODO:  Fill in as many additional material objects as needed in this key/value table.
             //        (Requirement 4)
             sphere: new Material(new defs.Phong_Shader(),
-                {ambient: 0.8, diffusivity: 0.6, color: hex_color("#5BAEB7"), specularity: 1})
-        }
-        this.angle = 0;
+                {ambient: 0.8, diffusivity: 0.6, color: hex_color("#5BAEB7"), specularity: 1}),
 
-        this.initial_camera_location = Mat4.look_at(vec3(0, 5, 40), vec3(0, 0, 0), vec3(0, 1, 0));
+
+        }
+
+        this.angle = 0;
+        this.initial_camera_location = Mat4.look_at(vec3(0, 10, 20), vec3(0, 0, 0), vec3(0, 1, 0));
     }
 
     make_control_panel() {
         // Draw the scene's buttons, setup their actions and keyboard shortcuts, and monitor live measurements.
         this.key_triggered_button("View whole system", ["Control", "0"], () => this.attached = () => this.initial_camera_location);
         this.new_line();
-        this.key_triggered_button("rotate left", ["Control","a"], () => this.angle += 1);
-        this.key_triggered_button("rotate right", ["Control","d"], () => this.angle -= 1);
+        this.key_triggered_button("rotate left", ["j"], () => this.angle += 0.1);
+        this.key_triggered_button("rotate right", ["l"], () => this.angle -= 0.1);
         this.new_line();
         this.key_triggered_button("Attach to ball", ["Control", "3"], () => this.attached = () => this.ball);
+        // this.key_triggered_button("Rotate Left", ["j"], () => {
+        //     this.left ^= 1;
+        // });
+        // this.key_triggered_button("Rotate Left", ["l"], () => {
+        //     this.right ^= 1;
+        // });
 
     }
 
     draw_unit(context, program_state){
         const yellow = hex_color("#fac91a");
         const grey = hex_color("#3b3b3b");
-        let model_transform = Mat4.identity();
+        const red = hex_color("#ff0000");
+        const white = hex_color("#ffffff");
 
+        // const t = this.t = program_state.animation_time / 1000;
+        // this.angle = 2*t;
         // let cube_transform = Mat4.identity();
         // cube_transform = model_transform.times(Mat4.scale(1, 1, 8));
         // this.shapes.cube.draw(context, program_state, cube_transform, this.materials.test.override({color: yellow}));
 
+        // Draw the center pillar
+        let model_transform = Mat4.identity();
         model_transform = model_transform.times(Mat4.rotation(Math.PI/2,1,0,0))
             .times(Mat4.scale(1,1,17));
+        //this.shapes.test.draw(context, program_state, model_transform, this.materials.test.override({color: yellow}));
         this.shapes.piler.draw(context, program_state, model_transform, this.materials.test);
 
+        // Draw platforms and "fans"
         let platForm_transform = Mat4.identity();
+        let fan_transform = Mat4.identity();
+
         platForm_transform = platForm_transform.times(Mat4.rotation(Math.PI/2, 1,0,0))
-            .times(Mat4.scale(3,3,0.5))
-            .times(Mat4.translation(0,0,-11))
-            .times(Mat4.rotation(this.angle,0,0,1));
+                .times(Mat4.scale(3,3,0.5))
+                .times(Mat4.translation(0,0,-11))
+                .times(Mat4.rotation(this.angle,0,0,1))
+        fan_transform = fan_transform.times(Mat4.rotation(Math.PI/2, 1,0,0))
+                .times(Mat4.scale(3,3,0.5))
+                .times(Mat4.translation(0,0,-11.6))
+                .times(Mat4.rotation(this.angle,0,0,1))
 
-        this.shapes.platForm.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
+        let dead_zone_transform = fan_transform.times(Mat4.translation(0,0,15))
 
-        platForm_transform = platForm_transform.times(Mat4.translation(0,0,5));
-        this.shapes.platForm.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
+            this.shapes.platForm.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
+        // Draw the fan at the updated position
+        this.shapes.fan.draw(context, program_state, fan_transform, this.materials.test.override({color: yellow}));
 
-        platForm_transform = platForm_transform.times(Mat4.translation(0,0,5));
-        this.shapes.platForm.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
+        for (let i = 0; i < 5; i++) {
+            platForm_transform = platForm_transform.times(Mat4.translation(0, 0, 5));  // Compute the new position for the platform
+            fan_transform = fan_transform.times(Mat4.translation(0, 0, 5)).times(Mat4.rotation(Math.PI/4,0,0,1));            // Compute the new position for the fan
 
-        platForm_transform = platForm_transform.times(Mat4.translation(0,0,5));
-        this.shapes.platForm.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
+            this.shapes.platForm.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
+            // Draw the fan at the updated position
+            this.shapes.fan.draw(context, program_state, fan_transform, this.materials.test.override({color: yellow}));
+        }
 
-        platForm_transform = platForm_transform.times(Mat4.translation(0,0,5));
-        this.shapes.platForm.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
 
-        platForm_transform = platForm_transform.times(Mat4.translation(0,0,5));
-        this.shapes.platForm.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
+        this.shapes.fan.draw(context, program_state, dead_zone_transform, this.materials.test.override({color: red}));
+
+
 
     }
     display(context, program_state) {
@@ -97,6 +124,7 @@ export class Assignment3 extends Scene {
             this.children.push(context.scratchpad.controls = new defs.Movement_Controls());
             // Define the global camera and projection matrices, which are stored in program_state.
             program_state.set_camera(this.initial_camera_location);
+            //program_state.camera_inverse =  this.attached()
         }
 
         program_state.projection_transform = Mat4.perspective(
@@ -108,7 +136,7 @@ export class Assignment3 extends Scene {
         // TODO: Lighting (Requirement 2)
         const light_position = vec4(0, 5, 5, 1);
         // The parameters of the Light are: position, color, size
-        program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 1000)];
+        program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 100000)];
 
         // TODO:  Fill in matrix operations and drawing code to draw the solar system scene (Requirements 3 and 4)
         const t = program_state.animation_time / 1000, dt = program_state.animation_delta_time / 1000;

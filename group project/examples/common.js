@@ -346,6 +346,7 @@ const Cylindrical_Tube = defs.Cylindrical_Tube =
         }
     }
 
+
 const Cone_Tip = defs.Cone_Tip =
     class Cone_Tip extends Surface_Of_Revolution {
         // Note:  Touches the Z axis; squares degenerate into triangles as they sweep around.
@@ -411,6 +412,108 @@ const Capped_Cylinder = defs.Capped_Cylinder =
             Regular_2D_Polygon.insert_transformed_copy_into(this, [1, columns], Mat4.rotation(Math.PI, 0, 1, 0).times(Mat4.translation(0, 0, .5)));
         }
     }
+
+
+
+// const Fan_Shaped_Cylinder = defs.Fan_Shaped_Cylinder =
+//     class Fan_Shaped_Cylinder extends Shape {
+//         // Create a fan-shaped (or sector of a cylinder) with capped ends, defined by an angle in radians.
+//         constructor(rows, columns, angle = Math.PI / 4, texture_range = [[0, 1], [0, 1]]) {
+//             super("position", "normal", "texture_coord");
+//             this.angle = angle;
+//
+//             // Create the side walls of the cylinder:
+//             for (let row = 0; row <= rows; row++) {
+//                 const y = row / rows;
+//                 for (let col = 0; col <= columns; col++) {
+//                     const theta = col / columns * this.angle;
+//                     const x = Math.cos(theta);
+//                     const z = Math.sin(theta);
+//
+//                     // Position and normal for the side walls:
+//                     this.arrays.position.push(vec3(x, 2 * y - 1, z));
+//                     this.arrays.normal.push(vec3(x, 0, z));
+//                     this.arrays.texture_coord.push(vec((col / columns) * texture_range[0][1], y * texture_range[1][1]));
+//                 }
+//             }
+//
+//             // Creating indices for the side walls:
+//             for (let row = 0; row < rows; row++) {
+//                 for (let col = 0; col < columns; col++) {
+//                     const a = row * (columns + 1) + col;
+//                     const b = row * (columns + 1) + col + 1;
+//                     const c = (row + 1) * (columns + 1) + col + 1;
+//                     const d = (row + 1) * (columns + 1) + col;
+//
+//                     // Two triangles per grid cell:
+//                     this.indices.push(a, b, c, a, c, d);
+//                 }
+//             }
+//
+//             // Create caps:
+//             const center_top = vec3(0, 1, 0), center_bottom = vec3(0, -1, 0);
+//             const vert_offset = this.arrays.position.length;
+//
+//             // Top and bottom cap vertices:
+//             this.arrays.position.push(center_top, center_bottom);
+//             this.arrays.normal.push(vec3(0, 1, 0), vec3(0, -1, 0));
+//             this.arrays.texture_coord.push(vec(0.5, 0.5), vec(0.5, 0.5));
+//
+//             for (let col = 0; col <= columns; col++) {
+//                 const theta = col / columns * this.angle;
+//                 const x = Math.cos(theta);
+//                 const z = Math.sin(theta);
+//
+//                 // Cap vertices and normals:
+//                 this.arrays.position.push(vec3(x, 1, z), vec3(x, -1, z));
+//                 this.arrays.normal.push(vec3(0, 1, 0), vec3(0, -1, 0));
+//                 this.arrays.texture_coord.push(vec((Math.cos(theta) + 1) / 2, (Math.sin(theta) + 1) / 2),
+//                     vec((Math.cos(theta) + 1) / 2, (Math.sin(theta) + 1) / 2));
+//
+//                 if (col < columns) {
+//                     // Indices for the top cap:
+//                     const top_center = vert_offset;
+//                     const top_ring_first = vert_offset + 2 + col * 2;
+//                     this.indices.push(top_center, top_ring_first, top_ring_first + 2);
+//
+//                     // Indices for the bottom cap:
+//                     const bottom_center = vert_offset + 1;
+//                     const bottom_ring_first = vert_offset + 3 + col * 2;
+//                     this.indices.push(bottom_center, bottom_ring_first + 2, bottom_ring_first);
+//                 }
+//             }
+//         }
+//     }
+
+
+const Fan_Shape = defs.Fan_Shape =
+    class Fan_Shape extends Shape {
+        constructor(angle = Math.PI / 4, num_triangles = 10) { // Default angle is 45 degrees
+            super("position", "normal", "texture_coord");
+            // Center of the fan
+            this.arrays.position.push(vec3(0, 0, 0));
+            this.arrays.normal.push(vec3(0, 0, 1));
+            this.arrays.texture_coord.push(vec(0.5, 0.5));
+
+            // Generate points on the circle
+            const step = angle / num_triangles;
+            for (let i = 0; i <= num_triangles; i++) {
+                const theta = step * i - angle / 2;
+                const x = Math.cos(theta), y = Math.sin(theta);
+
+                this.arrays.position.push(vec3(x, y, 0));
+                this.arrays.normal.push(vec3(0, 0, 1));
+                this.arrays.texture_coord.push(vec(x / 2 + 0.5, y / 2 + 0.5)); // Normalize for texture coord
+            }
+
+            // Create triangles
+            for (let i = 1; i <= num_triangles; i++) {
+                this.indices.push(0, i, i + 1);
+            }
+        }
+    }
+
+
 
 const Rounded_Capped_Cylinder = defs.Rounded_Capped_Cylinder =
     class Rounded_Capped_Cylinder extends Surface_Of_Revolution {

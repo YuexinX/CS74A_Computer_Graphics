@@ -339,6 +339,9 @@ const Cylindrical_Tube = defs.Cylindrical_Tube =
         }
     }
 
+
+
+
 const Cone_Tip = defs.Cone_Tip =
     class Cone_Tip extends Surface_Of_Revolution {
         // Note:  Touches the Z axis; squares degenerate into triangles as they sweep around.
@@ -405,6 +408,10 @@ const Capped_Cylinder = defs.Capped_Cylinder =
         }
     }
 
+
+
+
+
 const Rounded_Capped_Cylinder = defs.Rounded_Capped_Cylinder =
     class Rounded_Capped_Cylinder extends Surface_Of_Revolution {
         // An alternative without three separate sections
@@ -435,6 +442,9 @@ const Axis_Arrows = defs.Axis_Arrows =
             Cylindrical_Tube.insert_transformed_copy_into(this, [7, 7, tex], transform.times(Mat4.translation(0, 0, 1)).times(Mat4.scale(.1, .1, 2)));
         }
     }
+
+
+
 
 
 const Minimal_Shape = defs.Minimal_Shape =
