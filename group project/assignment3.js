@@ -1,4 +1,5 @@
 import {defs, tiny} from './examples/common.js';
+ import { Shape_From_File } from './examples/obj-file-demo.js';
 
 const {
     Vector, Vector3, vec, vec3, vec4, color, hex_color, Shader, Matrix, Mat4, Light, Shape, Material, Scene,
@@ -21,6 +22,7 @@ export class Assignment3 extends Scene {
             //        (Requirement 1)
             piler: new defs.Capped_Cylinder(20,20),
             platForm: new defs.Capped_Cylinder(20,20),
+            platform: new Shape_From_File("./assets/platform.obj"),
             addOn: new defs.Capped_Cylinder(20,20),
             cube: new defs.Cube()
         };
@@ -39,6 +41,8 @@ export class Assignment3 extends Scene {
         }
         this.angle = 0;
 
+        this.platform_y = [];
+
         this.initial_camera_location = Mat4.look_at(vec3(0, 5, 40), vec3(0, 0, 0), vec3(0, 1, 0));
     }
 
@@ -46,8 +50,8 @@ export class Assignment3 extends Scene {
         // Draw the scene's buttons, setup their actions and keyboard shortcuts, and monitor live measurements.
         this.key_triggered_button("View whole system", ["Control", "0"], () => this.attached = () => this.initial_camera_location);
         this.new_line();
-        this.key_triggered_button("rotate left", ["Control","a"], () => this.angle += 1);
-        this.key_triggered_button("rotate right", ["Control","d"], () => this.angle -= 1);
+        this.key_triggered_button("rotate left", ["Control","a"], () => this.angle += Math.PI/30);
+        this.key_triggered_button("rotate right", ["Control","d"], () => this.angle -= Math.PI/30);
         this.new_line();
         this.key_triggered_button("Attach to ball", ["Control", "3"], () => this.attached = () => this.ball);
 
@@ -63,31 +67,30 @@ export class Assignment3 extends Scene {
         // this.shapes.cube.draw(context, program_state, cube_transform, this.materials.test.override({color: yellow}));
 
         model_transform = model_transform.times(Mat4.rotation(Math.PI/2,1,0,0))
-            .times(Mat4.scale(1,1,17));
+            .times(Mat4.scale(1,1,20));
         this.shapes.piler.draw(context, program_state, model_transform, this.materials.test);
 
         let platForm_transform = Mat4.identity();
-        platForm_transform = platForm_transform.times(Mat4.rotation(Math.PI/2, 1,0,0))
-            .times(Mat4.scale(3,3,0.5))
-            .times(Mat4.translation(0,0,-11))
-            .times(Mat4.rotation(this.angle,0,0,1));
+        platForm_transform = platForm_transform.times(Mat4.scale(3,5,3))
+            .times(Mat4.translation(0,-1.5,0))
+            .times(Mat4.rotation(this.angle,0,1,0));
 
-        this.shapes.platForm.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
+        this.shapes.platform.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
 
-        platForm_transform = platForm_transform.times(Mat4.translation(0,0,5));
-        this.shapes.platForm.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
+        platForm_transform = platForm_transform.times(Mat4.translation(0,0.6,0));
+        this.shapes.platform.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
 
-        platForm_transform = platForm_transform.times(Mat4.translation(0,0,5));
-        this.shapes.platForm.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
+        platForm_transform = platForm_transform.times(Mat4.translation(0,0.6,0));
+        this.shapes.platform.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
 
-        platForm_transform = platForm_transform.times(Mat4.translation(0,0,5));
-        this.shapes.platForm.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
+        platForm_transform = platForm_transform.times(Mat4.translation(0,0.6,0));
+        this.shapes.platform.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
 
-        platForm_transform = platForm_transform.times(Mat4.translation(0,0,5));
-        this.shapes.platForm.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
+        platForm_transform = platForm_transform.times(Mat4.translation(0,0.6,0));
+        this.shapes.platform.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
 
-        platForm_transform = platForm_transform.times(Mat4.translation(0,0,5));
-        this.shapes.platForm.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
+        platForm_transform = platForm_transform.times(Mat4.translation(0,0.6,0));
+        this.shapes.platform.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
 
     }
     display(context, program_state) {
@@ -102,34 +105,34 @@ export class Assignment3 extends Scene {
         program_state.projection_transform = Mat4.perspective(
             Math.PI / 4, context.width / context.height, .1, 1000);
 
-        // TODO: Create Planets (Requirement 1)
-        // this.shapes.[XXX].draw([XXX]) // <--example
-
-        // TODO: Lighting (Requirement 2)
-        const light_position = vec4(0, 5, 5, 1);
-        // The parameters of the Light are: position, color, size
-        program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 1000)];
-
-        // TODO:  Fill in matrix operations and drawing code to draw the solar system scene (Requirements 3 and 4)
         const t = program_state.animation_time / 1000, dt = program_state.animation_delta_time / 1000;
-
-        this.draw_unit(context, program_state);
 
         let ball_transform = Mat4.identity();
         let fall_factor = 20*(t%1.43);
 
 
-
         ball_transform = ball_transform.times(Mat4.scale(0.4,0.4,0.4))
             .times(Mat4.translation(0,15-fall_factor,5));
+
+        const light_position = vec4(0, 5, 5, 1);
+
+        // The parameters of the Light are: position, color, size
+        program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 1000)];
+
+
+        this.draw_unit(context, program_state);
+
+
 
 
         this.shapes.sphere.draw(context, program_state, ball_transform, this.materials.sphere);
 
         this.ball = Mat4.inverse(ball_transform.times(Mat4.translation(0,0,20)));
+
         if(this.attached !== undefined){
             program_state.camera_inverse =  this.attached();
         }
+
 
     }
 }
