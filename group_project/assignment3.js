@@ -40,17 +40,22 @@ export class Assignment3 extends Scene {
                 {ambient: 0.8, diffusivity: 0.6, color: hex_color("#5BAEB7"), specularity: 1})
         }
         this.angle = 0;
-        this.platform_y = [];
 
-        // scoreboard 
-        this.score = 0;
-        this.lives = 3;
-        this.scoreElement = document.getElementById("score");
-		this.livesElement = document.getElementById("lives");
-		this.scoreNode = document.createTextNode("");
-		this.livesNode = document.createTextNode("");
-		this.scoreElement.appendChild(this.scoreNode);
-		this.livesElement.appendChild(this.livesNode);
+
+        this.ball_y = 6;
+        this.platform_y = new Set();
+        this.init = true;
+        this.randAngle = 1;
+
+         // scoreboard 
+         this.score = 0;
+         this.lives = 3;
+         this.scoreElement = document.getElementById("score");
+         this.livesElement = document.getElementById("lives");
+         this.scoreNode = document.createTextNode("");
+         this.livesNode = document.createTextNode("");
+         this.scoreElement.appendChild(this.scoreNode);
+         this.livesElement.appendChild(this.livesNode);
 
         this.initial_camera_location = Mat4.look_at(vec3(0, 5, 40), vec3(0, 0, 0), vec3(0, 1, 0));
     }
@@ -66,7 +71,7 @@ export class Assignment3 extends Scene {
 
     }
 
-    draw_unit(context, program_state){
+    draw_unit(context, program_state, randAngle){
         const yellow = hex_color("#fac91a");
         const grey = hex_color("#3b3b3b");
         let model_transform = Mat4.identity();
@@ -84,32 +89,40 @@ export class Assignment3 extends Scene {
             .times(Mat4.translation(0,-1.5,0))
             .times(Mat4.rotation(this.angle,0,1,0));
 
+
+
+        this.shapes.platform.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
+        platForm_transform = platForm_transform.times(Mat4.translation(0,0.6,0));
+        this.shapes.platform.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
+
+        platForm_transform = platForm_transform.times(Mat4.translation(0,0.6,0));
+
+                                                //.times(Mat4.rotation(Math.PI/11,0,1,0));
+        let y1 = platForm_transform[1][3];
+        this.platform_y.add(y1);
+        this.shapes.platform.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
+
+        platForm_transform = platForm_transform.times(Mat4.translation(0,0.6,0));
+                                                //.times(Mat4.rotation(Math.PI/randAngle,0,1,0));
+        let y2 = platForm_transform[1][3];
+        this.platform_y.add(y2);
+        this.shapes.platform.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
+
+        platForm_transform = platForm_transform.times(Mat4.translation(0,0.6,0));
+        let y3 = platForm_transform[1][3];
+        this.platform_y.add(y3);
+        this.shapes.platform.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
+
+        platForm_transform = platForm_transform.times(Mat4.translation(0,0.6,0));
+        let y4 = platForm_transform[1][3];
+        this.platform_y.add(y4);
         this.shapes.platform.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
 
         platForm_transform = platForm_transform.times(Mat4.translation(0,0.6,0));
         this.shapes.platform.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
 
-        platForm_transform = platForm_transform.times(Mat4.translation(0,0.6,0));
-        this.shapes.platform.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
-
-        platForm_transform = platForm_transform.times(Mat4.translation(0,0.6,0));
-        this.shapes.platform.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
-
-        platForm_transform = platForm_transform.times(Mat4.translation(0,0.6,0));
-        this.shapes.platform.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
-
-        platForm_transform = platForm_transform.times(Mat4.translation(0,0.6,0));
-        this.shapes.platform.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
 
     }
-
-    collision(context, program_state){
-        //placeholder to check scoreboard 
-        // for (let i = 0; i < 10; i++){
-        //     this.score += 1;
-        // }
-    }
-
     display(context, program_state) {
         // display():  Called once per frame of animation.
         // Setup -- This part sets up the scene's overall camera matrix, projection matrix, and lights:
@@ -122,27 +135,37 @@ export class Assignment3 extends Scene {
         program_state.projection_transform = Mat4.perspective(
             Math.PI / 4, context.width / context.height, .1, 1000);
 
-        const t = program_state.animation_time / 1000, dt = program_state.animation_delta_time / 1000;
-
-        // make the score & lives integer
-        this.scoreNode.nodeValue = this.score.toFixed(0);  
-    	this.livesNode.nodeValue = this.lives.toFixed(0);
-        this.collision(program_state);
-
-        let ball_transform = Mat4.identity();
-        let fall_factor = 20*(t%1.43);
-
-
-        ball_transform = ball_transform.times(Mat4.scale(0.4,0.4,0.4))
-            .times(Mat4.translation(0,15 - fall_factor,5));
 
         const light_position = vec4(0, 5, 5, 1);
 
         // The parameters of the Light are: position, color, size
         program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 1000)];
 
+        this.draw_unit(context, program_state, this.randAngle);
 
-        this.draw_unit(context, program_state);
+
+        const positions = Array.from(this.platform_y);
+        //y coordinate of the lowest platform;
+        const bottom = positions[0];
+        const t = program_state.animation_time / 1000, dt = program_state.animation_delta_time / 1000;
+
+        // make the score & lives integer
+        this.scoreNode.nodeValue = this.score.toFixed(0);  
+    	this.livesNode.nodeValue = this.lives.toFixed(0);
+        //this.collision(program_state);
+
+        let ball_transform = Mat4.identity();
+        let control = 1;
+        let fall_factor = 20*(t%1.5);
+
+
+
+        ball_transform = ball_transform.times(Mat4.scale(0.4,0.4,0.4))
+            .times(Mat4.translation(0,18-fall_factor,5));
+
+
+        this.ball_y = ball_transform[1][3];
+
 
         this.shapes.sphere.draw(context, program_state, ball_transform, this.materials.sphere);
 
@@ -151,7 +174,6 @@ export class Assignment3 extends Scene {
         if(this.attached !== undefined){
             program_state.camera_inverse =  this.attached();
         }
-
 
     }
 }
@@ -343,4 +365,5 @@ class Ring_Shader extends Shader {
         }`;
     }
 }
+
 
