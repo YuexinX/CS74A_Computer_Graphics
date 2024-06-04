@@ -1,0 +1,12 @@
+.container {
+    background-color: black;
+    position: relative;
+}
+#scoreboard {
+    font-size: 20pt;
+    background: #6488EA;
+    color: #FFFFFF;
+    position: absolute;
+    right: 30px;
+    top: 30px;
+}
