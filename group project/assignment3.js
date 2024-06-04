@@ -41,8 +41,10 @@ export class Assignment3 extends Scene {
         }
         this.angle = 0;
 
-        this.platform_y = [];
-
+        this.ball_y = 6;
+        this.platform_y = new Set();
+        this.init = true;
+        this.randAngle = 1;
         this.initial_camera_location = Mat4.look_at(vec3(0, 5, 40), vec3(0, 0, 0), vec3(0, 1, 0));
     }
 
@@ -57,7 +59,7 @@ export class Assignment3 extends Scene {
 
     }
 
-    draw_unit(context, program_state){
+    draw_unit(context, program_state, randAngle){
         const yellow = hex_color("#fac91a");
         const grey = hex_color("#3b3b3b");
         let model_transform = Mat4.identity();
@@ -75,22 +77,36 @@ export class Assignment3 extends Scene {
             .times(Mat4.translation(0,-1.5,0))
             .times(Mat4.rotation(this.angle,0,1,0));
 
+
+        this.shapes.platform.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
+        platForm_transform = platForm_transform.times(Mat4.translation(0,0.6,0));
+        this.shapes.platform.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
+
+        platForm_transform = platForm_transform.times(Mat4.translation(0,0.6,0));
+                                                //.times(Mat4.rotation(Math.PI/11,0,1,0));
+        let y1 = platForm_transform[1][3];
+        this.platform_y.add(y1);
+        this.shapes.platform.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
+
+        platForm_transform = platForm_transform.times(Mat4.translation(0,0.6,0));
+                                                //.times(Mat4.rotation(Math.PI/randAngle,0,1,0));
+        let y2 = platForm_transform[1][3];
+        this.platform_y.add(y2);
+        this.shapes.platform.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
+
+        platForm_transform = platForm_transform.times(Mat4.translation(0,0.6,0));
+        let y3 = platForm_transform[1][3];
+        this.platform_y.add(y3);
+        this.shapes.platform.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
+
+        platForm_transform = platForm_transform.times(Mat4.translation(0,0.6,0));
+        let y4 = platForm_transform[1][3];
+        this.platform_y.add(y4);
         this.shapes.platform.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
 
         platForm_transform = platForm_transform.times(Mat4.translation(0,0.6,0));
         this.shapes.platform.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
 
-        platForm_transform = platForm_transform.times(Mat4.translation(0,0.6,0));
-        this.shapes.platform.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
-
-        platForm_transform = platForm_transform.times(Mat4.translation(0,0.6,0));
-        this.shapes.platform.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
-
-        platForm_transform = platForm_transform.times(Mat4.translation(0,0.6,0));
-        this.shapes.platform.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
-
-        platForm_transform = platForm_transform.times(Mat4.translation(0,0.6,0));
-        this.shapes.platform.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
 
     }
     display(context, program_state) {
@@ -105,25 +121,37 @@ export class Assignment3 extends Scene {
         program_state.projection_transform = Mat4.perspective(
             Math.PI / 4, context.width / context.height, .1, 1000);
 
-        const t = program_state.animation_time / 1000, dt = program_state.animation_delta_time / 1000;
-
-        let ball_transform = Mat4.identity();
-        let fall_factor = 20*(t%1.43);
-
-
-        ball_transform = ball_transform.times(Mat4.scale(0.4,0.4,0.4))
-            .times(Mat4.translation(0,15-fall_factor,5));
-
         const light_position = vec4(0, 5, 5, 1);
 
         // The parameters of the Light are: position, color, size
         program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 1000)];
 
+        // if(this.init){
+        //     this.init = false;
+        //     this.randAngle = Math.floor(Math.random() * (8 - 2 + 1)) + 2;
+        // }
 
-        this.draw_unit(context, program_state);
+        this.draw_unit(context, program_state, this.randAngle);
+
+        const positions = Array.from(this.platform_y);
+        //y coordinate of the lowest platform;
+        const bottom = positions[0];
+        const t = program_state.animation_time / 1000, dt = program_state.animation_delta_time / 1000;
+
+        let ball_transform = Mat4.identity();
+        let control = 1;
+        let fall_factor = 20*(t%1.5);
 
 
+        ball_transform = ball_transform.times(Mat4.scale(0.4,0.4,0.4))
+            .times(Mat4.translation(0,18-fall_factor,5));
 
+
+        this.ball_y = ball_transform[1][3];
+        // if (this.ball_y > positions[-1]){
+        //     this.init = true;
+        // }
+        // console.log(this.ball_y);
 
         this.shapes.sphere.draw(context, program_state, ball_transform, this.materials.sphere);
 
@@ -134,6 +162,8 @@ export class Assignment3 extends Scene {
         }
 
 
+
+        //console.log(this.randAngle);
     }
 }
 
