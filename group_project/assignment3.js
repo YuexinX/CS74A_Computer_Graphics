@@ -24,7 +24,8 @@ export class Assignment3 extends Scene {
             platForm: new defs.Capped_Cylinder(20,20),
             platform: new Shape_From_File("./assets/platform.obj"),
             addOn: new defs.Capped_Cylinder(20,20),
-            cube: new defs.Cube()
+            cube: new defs.Cube(),
+            deathZone: new Shape_From_File("./assets/deathZone.obj")
         };
 
         // *** Materials
@@ -77,47 +78,57 @@ export class Assignment3 extends Scene {
     draw_unit(context, program_state, randAngle){
         const yellow = hex_color("#fac91a");
         const grey = hex_color("#3b3b3b");
+        const red = hex_color("#ff0000");
         let model_transform = Mat4.identity();
 
         model_transform = model_transform.times(Mat4.rotation(Math.PI/2,1,0,0))
             .times(Mat4.scale(1,1,20));
         this.shapes.piler.draw(context, program_state, model_transform, this.materials.test);
 
+
+
         let platForm_transform = Mat4.identity();
-        platForm_transform = platForm_transform.times(Mat4.scale(3,5,3))
-            .times(Mat4.translation(0,-1.5,0))
-            .times(Mat4.rotation(this.angle,0,1,0));
+        platForm_transform = platForm_transform.times(Mat4.scale(2.5,1,2.5))
+            .times(Mat4.translation(0,-7.5,0))
+            .times(Mat4.rotation(0,0,1,0));
 
-
-
+        // let deathZone_transform = Mat4.identity();
+        // deathZone_transform = deathZone_transform.times(Mat4.scale(2.5,1,2.5))
+        //     .times(Mat4.translation(0,-7.5,0.6))
+        //     .times(Mat4.rotation(this.angle,0,1,0));
+        //
+        // this.shapes.deathZone.draw(context, program_state, deathZone_transform, this.materials.test.override({color: red}));
         this.shapes.platform.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
-        platForm_transform = platForm_transform.times(Mat4.translation(0,0.6,0));
-        this.shapes.platform.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
+        // console.log(platForm_transform[1][3]);
 
-        platForm_transform = platForm_transform.times(Mat4.translation(0,0.6,0));
+        platForm_transform = platForm_transform.times(Mat4.translation(0,3,0));
+        this.shapes.platform.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
+        // console.log(platForm_transform[1][3]);
+
+        platForm_transform = platForm_transform.times(Mat4.translation(0,3,0));
 
                                                 //.times(Mat4.rotation(Math.PI/11,0,1,0));
         let y1 = platForm_transform[1][3];
         this.platform_y.add(y1);
         this.shapes.platform.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
 
-        platForm_transform = platForm_transform.times(Mat4.translation(0,0.6,0));
+        platForm_transform = platForm_transform.times(Mat4.translation(0,3,0));
                                                 //.times(Mat4.rotation(Math.PI/randAngle,0,1,0));
         let y2 = platForm_transform[1][3];
         this.platform_y.add(y2);
         this.shapes.platform.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
 
-        platForm_transform = platForm_transform.times(Mat4.translation(0,0.6,0));
+        platForm_transform = platForm_transform.times(Mat4.translation(0,3,0));
         let y3 = platForm_transform[1][3];
         this.platform_y.add(y3);
         this.shapes.platform.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
 
-        platForm_transform = platForm_transform.times(Mat4.translation(0,0.6,0));
+        platForm_transform = platForm_transform.times(Mat4.translation(0,3,0));
         let y4 = platForm_transform[1][3];
         this.platform_y.add(y4);
         this.shapes.platform.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
 
-        platForm_transform = platForm_transform.times(Mat4.translation(0,0.6,0));
+        platForm_transform = platForm_transform.times(Mat4.translation(0,3,0));
         this.shapes.platform.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
 
 
@@ -143,11 +154,14 @@ export class Assignment3 extends Scene {
         this.draw_unit(context, program_state, this.randAngle);
 
 
-        const positions = Array.from(this.platform_y);
+
+        //const positions = Array.from(this.platform_y);
         //y coordinate of the lowest platform;
+
         const bottom = positions[0];
         const t = this.t = program_state.animation_time / 1000;
         const dt = this.dt = program_state.animation_delta_time / 1000;
+
 
         // make the score & lives integer
         this.scoreNode.nodeValue = this.score.toFixed(0);  
