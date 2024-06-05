@@ -38,12 +38,15 @@ export class Assignment3 extends Scene {
             // TODO:  Fill in as many additional material objects as needed in this key/value table.
             //        (Requirement 4)
             sphere: new Material(new defs.Phong_Shader(),
-                {ambient: 0.8, diffusivity: 0.6, color: hex_color("#5BAEB7"), specularity: 1})
+                {ambient: 0.8, diffusivity: 0.6, color: hex_color("#5BAEB7"), specularity: 1}),
         }
         this.angle = 0;
 
+        this.ball_maxspeed = 13;
+        this.ball_pos = vec3(0, 5.5, 2);
+        this.ball_speed = vec3(0, 0, 0);//gravity: constant
+        this.ball_g = -30; 
 
-        this.ball_y = 6;
         this.platform_y = new Set();
         this.init = true;
         this.randAngle = 1;
@@ -77,10 +80,6 @@ export class Assignment3 extends Scene {
         const grey = hex_color("#3b3b3b");
         const red = hex_color("#ff0000");
         let model_transform = Mat4.identity();
-
-        // let cube_transform = Mat4.identity();
-        // cube_transform = model_transform.times(Mat4.scale(1, 1, 8));
-        // this.shapes.cube.draw(context, program_state, cube_transform, this.materials.test.override({color: yellow}));
 
         model_transform = model_transform.times(Mat4.rotation(Math.PI/2,1,0,0))
             .times(Mat4.scale(1,1,20));
@@ -158,8 +157,11 @@ export class Assignment3 extends Scene {
 
         //const positions = Array.from(this.platform_y);
         //y coordinate of the lowest platform;
-        //const bottom = positions[0];
-        const t = program_state.animation_time / 1000, dt = program_state.animation_delta_time / 1000;
+
+        const bottom = positions[0];
+        const t = this.t = program_state.animation_time / 1000;
+        const dt = this.dt = program_state.animation_delta_time / 1000;
+
 
         // make the score & lives integer
         this.scoreNode.nodeValue = this.score.toFixed(0);  
@@ -167,17 +169,30 @@ export class Assignment3 extends Scene {
         //this.collision(program_state);
 
         let ball_transform = Mat4.identity();
-        let control = 1;
-        let fall_factor = 20*(t%1.5);
+        //let control = 1;
+        //let fall_factor = 20*(t%1.5);
 
+        
 
+       //ball_transform = ball_transform.times(Mat4.scale(0.4,0.4,0.4))
+         //   .times(Mat4.translation(0,18-fall_factor,5));
 
-        ball_transform = ball_transform.times(Mat4.scale(0.4,0.4,0.4))
-            .times(Mat4.translation(0,18-fall_factor,5));
+        //bounce effect
+        this.ball_pos = this.ball_pos.plus(this.ball_speed.times(this.dt));
+        this.ball_speed[1] = this.ball_speed[1] + this.dt * this.ball_g;
+        //console.log(this.platform_y);
+        // use the array, select the next value if the ball falls to the next platform
+        // steps: 1. randomly switch effects of falling and bouncing
+        // 2. array for y values & rotation angles array, angle variable
+        if (this.ball_pos[1] < 4){
+            this.ball_pos[1] = 4;
+            this.ball_speed[1] = this.ball_maxspeed;
+        }
+        ball_transform = ball_transform.times(Mat4.scale(0.5,0.5,0.5))
+                            .times(Mat4.translation(this.ball_pos[0], this.ball_pos[1], this.ball_pos[2]));
 
-
-        this.ball_y = ball_transform[1][3];
-
+        // red zone (bounce and this.lives - 1)
+        
 
         this.shapes.sphere.draw(context, program_state, ball_transform, this.materials.sphere);
 
@@ -377,5 +392,4 @@ class Ring_Shader extends Shader {
         }`;
     }
 }
-
 
