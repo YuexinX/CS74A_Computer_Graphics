@@ -90,7 +90,7 @@ export class Assignment3 extends Scene {
         let platForm_transform = Mat4.identity();
         platForm_transform = platForm_transform.times(Mat4.scale(2.5,1,2.5))
             .times(Mat4.translation(0,-7.5,0))
-            .times(Mat4.rotation(0,0,1,0));
+            .times(Mat4.rotation(this.angle,0,1,0));
 
         // let deathZone_transform = Mat4.identity();
         // deathZone_transform = deathZone_transform.times(Mat4.scale(2.5,1,2.5))
@@ -133,6 +133,8 @@ export class Assignment3 extends Scene {
 
 
     }
+
+
     display(context, program_state) {
         // display():  Called once per frame of animation.
         // Setup -- This part sets up the scene's overall camera matrix, projection matrix, and lights:
@@ -177,19 +179,34 @@ export class Assignment3 extends Scene {
        //ball_transform = ball_transform.times(Mat4.scale(0.4,0.4,0.4))
          //   .times(Mat4.translation(0,18-fall_factor,5));
 
-        //bounce effect
-        this.ball_pos = this.ball_pos.plus(this.ball_speed.times(this.dt));
-        this.ball_speed[1] = this.ball_speed[1] + this.dt * this.ball_g;
-        //console.log(this.platform_y);
-        // use the array, select the next value if the ball falls to the next platform
-        // steps: 1. randomly switch effects of falling and bouncing
-        // 2. array for y values & rotation angles array, angle variable
-        if (this.ball_pos[1] < 4){
-            this.ball_pos[1] = 4;
-            this.ball_speed[1] = this.ball_maxspeed;
+
+        // check if at gap
+        // change to angle of specific platform, platform # + 1
+        if (this.angle < -0.2*Math.PI && this.angle > -0.52*Math.PI) {
+            //bounce effect
+            this.ball_pos = this.ball_pos.plus(this.ball_speed.times(this.dt));
+            this.ball_speed[1] = this.ball_speed[1] + this.dt * this.ball_g;
+
+            ball_transform = ball_transform.times(Mat4.scale(0.5,0.5,0.5))
+                .times(Mat4.translation(this.ball_pos[0], this.ball_pos[1], this.ball_pos[2]));
+        } else {
+            // if not at gap, bounce
+            // bounce effect
+            this.ball_pos = this.ball_pos.plus(this.ball_speed.times(this.dt));
+            this.ball_speed[1] = this.ball_speed[1] + this.dt * this.ball_g;
+            //console.log(this.platform_y);
+            // use the array, select the next value if the ball falls to the next platform
+            // steps: 1. randomly switch effects of falling and bouncing
+            // 2. array for y values & rotation angles array, angle variable
+            if (this.ball_pos[1] < 4){
+                this.ball_pos[1] = 4;
+                this.ball_speed[1] = this.ball_maxspeed;
+            }
+            ball_transform = ball_transform.times(Mat4.scale(0.5,0.5,0.5))
+                .times(Mat4.translation(this.ball_pos[0], this.ball_pos[1], this.ball_pos[2]));
         }
-        ball_transform = ball_transform.times(Mat4.scale(0.5,0.5,0.5))
-                            .times(Mat4.translation(this.ball_pos[0], this.ball_pos[1], this.ball_pos[2]));
+
+
 
         // red zone (bounce and this.lives - 1)
         
