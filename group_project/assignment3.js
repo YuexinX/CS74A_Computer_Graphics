@@ -2,8 +2,11 @@ import {defs, tiny} from './examples/common.js';
  import { Shape_From_File } from './examples/obj-file-demo.js';
 
 const {
-    Vector, Vector3, vec, vec3, vec4, color, hex_color, Shader, Matrix, Mat4, Light, Shape, Material, Scene,
+    Vector, Vector3, vec, vec3, vec4, color, hex_color, Shader, Matrix, Mat4, Light, Shape, Material, Scene, Texture,
 } = tiny;
+
+const {Cube, Axis_Arrows, Textured_Phong} = defs
+
 
 
 
@@ -18,14 +21,11 @@ export class Assignment3 extends Scene {
             torus2: new defs.Torus(3, 15),
             sphere: new defs.Subdivision_Sphere(4),
             circle: new defs.Regular_2D_Polygon(1, 15),
-            // TODO:  Fill in as many additional shape instances as needed in this key/value table.
-            //        (Requirement 1)
+
             piler: new defs.Capped_Cylinder(20,20),
-            platForm: new defs.Capped_Cylinder(20,20),
             platform: new Shape_From_File("./assets/platform.obj"),
-            addOn: new defs.Capped_Cylinder(20,20),
-            cube: new defs.Cube(),
-            deathZone: new Shape_From_File("./assets/deathZone.obj")
+            background: new defs.Cube(),
+            deathZone: new Shape_From_File("./assets/deathZone-test.obj")
         };
 
         // *** Materials
@@ -39,17 +39,27 @@ export class Assignment3 extends Scene {
             //        (Requirement 4)
             sphere: new Material(new defs.Phong_Shader(),
                 {ambient: 0.8, diffusivity: 0.6, color: hex_color("#5BAEB7"), specularity: 1}),
+
+            default: new Material(new Textured_Phong(), {
+                color: hex_color("#111111"),
+                ambient: 1,
+                specularity: 0,
+                texture: new Texture("assets/blue-sky2.png", "NEAREST")
+            }),
         }
         this.angle = 0;
 
         this.ball_maxspeed = 13;
-        this.ball_pos = vec3(0, 5.5, 2);
+        this.ball_pos = vec3(0, 5.5, 7.5);
         this.ball_speed = vec3(0, 0, 0);//gravity: constant
         this.ball_g = -30; 
 
+        //platform info
         this.platform_y = new Set();
         this.init = true;
         this.randAngle = 1;
+        this.platform_angle = [[1.8*Math.PI, 1.5*Math.PI],[0.23*Math.PI, 1.9*Math.PI],[1.96*Math.PI, 1.65*Math.PI],[1.36*Math.PI, 1.03*Math.PI]];
+        this.deathZone_angle = [[], [1.6*Math.PI, 1.3*Math.PI], [1.3*Math.PI, Math.PI], [0.9*Math.PI, 0.6*Math.PI]];
 
          // scoreboard 
          this.score = 0;
@@ -61,6 +71,7 @@ export class Assignment3 extends Scene {
          this.scoreElement.appendChild(this.scoreNode);
          this.livesElement.appendChild(this.livesNode);
 
+
         this.initial_camera_location = Mat4.look_at(vec3(0, 5, 40), vec3(0, 0, 0), vec3(0, 1, 0));
     }
 
@@ -68,8 +79,25 @@ export class Assignment3 extends Scene {
         // Draw the scene's buttons, setup their actions and keyboard shortcuts, and monitor live measurements.
         this.key_triggered_button("View whole system", ["Control", "0"], () => this.attached = () => this.initial_camera_location);
         this.new_line();
-        this.key_triggered_button("rotate left", ["Control","a"], () => this.angle += Math.PI/30);
-        this.key_triggered_button("rotate right", ["Control","d"], () => this.angle -= Math.PI/30);
+        this.key_triggered_button("rotate left", ["Control","a"], () => {
+            if (this.angle-(Math.PI/30) < 0){
+                let newAngle1 = Math.PI/30 - this.angle;
+                this.angle = 2*Math.PI - newAngle1;
+            }
+            else{
+                this.angle -= Math.PI / 30;
+            }
+
+        });
+        this.key_triggered_button("rotate right", ["Control","d"], () => {
+            if (this.angle + (Math.PI/30) > (2*Math.PI)){
+                let newAngle2 = (this.angle + (Math.PI/30))-2*Math.PI;
+                this.angle = newAngle2;
+            }
+            else {
+                this.angle += Math.PI / 30;
+            }
+        });
         this.new_line();
         this.key_triggered_button("Attach to ball", ["Control", "3"], () => this.attached = () => this.ball);
 
@@ -90,45 +118,80 @@ export class Assignment3 extends Scene {
         let platForm_transform = Mat4.identity();
         platForm_transform = platForm_transform.times(Mat4.scale(2.5,1,2.5))
             .times(Mat4.translation(0,-7.5,0))
+            .times(Mat4.rotation(Math.PI/15, 0, 1, 0))
             .times(Mat4.rotation(this.angle,0,1,0));
 
-        // let deathZone_transform = Mat4.identity();
-        // deathZone_transform = deathZone_transform.times(Mat4.scale(2.5,1,2.5))
-        //     .times(Mat4.translation(0,-7.5,0.6))
-        //     .times(Mat4.rotation(this.angle,0,1,0));
-        //
-        // this.shapes.deathZone.draw(context, program_state, deathZone_transform, this.materials.test.override({color: red}));
-        this.shapes.platform.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
-        // console.log(platForm_transform[1][3]);
 
         platForm_transform = platForm_transform.times(Mat4.translation(0,3,0));
         this.shapes.platform.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
         // console.log(platForm_transform[1][3]);
 
-        platForm_transform = platForm_transform.times(Mat4.translation(0,3,0));
 
+        let platForm1_transform = platForm_transform;
+        let platForm2_transform = platForm_transform;
+        let platForm3_transform = platForm_transform;
+        let platForm4_transform = platForm_transform;
+
+        platForm1_transform = platForm1_transform.times(Mat4.rotation(Math.PI/2, 0, 1, 0))
+            .times(Mat4.translation(0,3,0));
                                                 //.times(Mat4.rotation(Math.PI/11,0,1,0));
         let y1 = platForm_transform[1][3];
         this.platform_y.add(y1);
-        this.shapes.platform.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
+        this.shapes.platform.draw(context, program_state, platForm1_transform, this.materials.test.override({color: grey}));
 
-        platForm_transform = platForm_transform.times(Mat4.translation(0,3,0));
+        let deathZone_transform = Mat4.identity();
+        deathZone_transform = deathZone_transform.times(Mat4.rotation(this.angle,0,1,0))
+            .times(Mat4.rotation(Math.PI/2, 0, 1, 0))
+            .times(Mat4.rotation(Math.PI/3, 0, 1, 0))
+            .times(Mat4.scale(2.3,1,2.3))
+            .times(Mat4.translation(0.8,-1.5,0.4));
+
+        this.shapes.deathZone.draw(context, program_state, deathZone_transform, this.materials.test.override({color: red}));
+        this.shapes.platform.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
+        // console.log(platForm_transform[1][3]);
+
+
+
+
+
+        platForm2_transform = platForm2_transform.times(Mat4.rotation(-Math.PI/15, 0, 1, 0))
+            .times(Mat4.translation(0,6,0));
                                                 //.times(Mat4.rotation(Math.PI/randAngle,0,1,0));
         let y2 = platForm_transform[1][3];
         this.platform_y.add(y2);
-        this.shapes.platform.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
+        this.shapes.platform.draw(context, program_state, platForm2_transform, this.materials.test.override({color: grey}));
 
-        platForm_transform = platForm_transform.times(Mat4.translation(0,3,0));
+        deathZone_transform = deathZone_transform.times(Mat4.translation(-0.8, 1.5, -0.4))
+            .times(Mat4.scale(1/2.3, 1, 1/2.3))
+            .times(Mat4.rotation(-Math.PI/15, 0,1,0))
+            .times(Mat4.rotation(-Math.PI/3, 0, 1, 0))
+            .times(Mat4.scale(2.3,1,2.3))
+            .times(Mat4.translation(0.8,1.5,0.3));
+
+        this.shapes.deathZone.draw(context, program_state, deathZone_transform, this.materials.test.override({color: red}));
+
+        platForm3_transform = platForm3_transform.times(Mat4.rotation(-Math.PI/3, 0, 1, 0))
+            .times(Mat4.translation(0,9,0));
+
         let y3 = platForm_transform[1][3];
         this.platform_y.add(y3);
-        this.shapes.platform.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
+        this.shapes.platform.draw(context, program_state, platForm3_transform, this.materials.test.override({color: grey}));
 
-        platForm_transform = platForm_transform.times(Mat4.translation(0,3,0));
+        deathZone_transform = deathZone_transform.times(Mat4.translation(-0.8, -1.5, -0.4))
+            .times(Mat4.scale(1/2.3, 1, 1/2.3))
+            .times(Mat4.rotation(-Math.PI/4, 0, 1, 0))
+            .times(Mat4.scale(2.3,1,2.3))
+            .times(Mat4.translation(0.8,4.5,0.3));
+
+        this.shapes.deathZone.draw(context, program_state, deathZone_transform, this.materials.test.override({color: red}));
+
+
+        platForm4_transform = platForm4_transform.times(Mat4.translation(0,12,0));
         let y4 = platForm_transform[1][3];
         this.platform_y.add(y4);
-        this.shapes.platform.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
+        this.shapes.platform.draw(context, program_state, platForm4_transform, this.materials.test.override({color: grey}));
 
-        platForm_transform = platForm_transform.times(Mat4.translation(0,3,0));
+        platForm_transform = platForm4_transform.times(Mat4.translation(0,3,0));
         this.shapes.platform.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
 
 
@@ -148,14 +211,18 @@ export class Assignment3 extends Scene {
             Math.PI / 4, context.width / context.height, .1, 1000);
 
 
-        const light_position = vec4(0, 5, 5, 1);
+        const light_position = vec4(0, 5, 30, 1);
 
         // The parameters of the Light are: position, color, size
-        program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 1000)];
+        program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 100000)];
 
         this.draw_unit(context, program_state);
 
-
+        //background
+        let background_transform = Mat4.identity();
+        background_transform = background_transform.times(Mat4.scale(20,20,0.8))
+            .times(Mat4.translation(0,0,-20));
+        this.shapes.background.draw(context, program_state, background_transform, this.materials.default);
 
         const positions = Array.from(this.platform_y);
         //y coordinate of the lowest platform;
@@ -182,7 +249,8 @@ export class Assignment3 extends Scene {
 
         // check if at gap
         // change to angle of specific platform, platform # + 1
-        if (this.angle < -0.2*Math.PI && this.angle > -0.52*Math.PI) {
+        //console.log(this.angle);
+        if ((this.angle < 1.96*Math.PI && this.angle > 1.65*Math.PI) ) {
             //bounce effect
             this.ball_pos = this.ball_pos.plus(this.ball_speed.times(this.dt));
             this.ball_speed[1] = this.ball_speed[1] + this.dt * this.ball_g;
