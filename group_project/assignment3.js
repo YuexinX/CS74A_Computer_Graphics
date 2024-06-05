@@ -75,7 +75,7 @@ export class Assignment3 extends Scene {
 
     }
 
-    draw_unit(context, program_state, randAngle){
+    draw_unit(context, program_state){
         const yellow = hex_color("#fac91a");
         const grey = hex_color("#3b3b3b");
         const red = hex_color("#ff0000");
@@ -151,11 +151,11 @@ export class Assignment3 extends Scene {
         // The parameters of the Light are: position, color, size
         program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 1000)];
 
-        this.draw_unit(context, program_state, this.randAngle);
+        this.draw_unit(context, program_state);
 
 
 
-        //const positions = Array.from(this.platform_y);
+        const positions = Array.from(this.platform_y);
         //y coordinate of the lowest platform;
 
         const bottom = positions[0];
