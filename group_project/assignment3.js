@@ -54,7 +54,7 @@ export class Assignment3 extends Scene {
 
         this.ball_maxspeed = 13;
         //this.ball_pos = vec3(0, 5.5, 7.5);
-        this.ball_pos = vec3(0, 17.5, 7.5);
+        this.ball_pos = vec3(0, 22.5, 7.5);
         this.ball_speed = vec3(0, 0, 0);//gravity: constant
         this.ball_g = -30; 
 
@@ -63,9 +63,10 @@ export class Assignment3 extends Scene {
         this.init = true;
         this.randAngle = 1;
         //this.platform_angle = [[1.8*Math.PI, 1.5*Math.PI],[0.23*Math.PI, 1.9*Math.PI],[1.96*Math.PI, 1.65*Math.PI],[1.36*Math.PI, 1.03*Math.PI]];
-        this.platform_angle = [[1.8*Math.PI, 1.5*Math.PI],[2.0*Math.PI, 1.9*Math.PI],[1.9*Math.PI, 1.65*Math.PI],[1.36*Math.PI, 1.03*Math.PI],[1.92*Math.PI, 1.6*Math.PI]];
-        this.deathZone_angle = [[1.3*Math.PI, 1.6*Math.PI], [1.6*Math.PI, 1.3*Math.PI], [1.3*Math.PI, Math.PI], [0.9*Math.PI, 0.6*Math.PI],[1.65*Math.PI, 1.92*Math.PI]];
+        this.platform_angle = [[0.5*Math.PI, 0.2*Math.PI],[1.93*Math.PI, 1.6*Math.PI],[1.65*Math.PI, 1.37*Math.PI],[1.36*Math.PI, 1.03*Math.PI],[1.76*Math.PI, 1.55*Math.PI]];
+        this.deathZone_angle = [[1.3*Math.PI, 1.6*Math.PI], [1.36*Math.PI, 1.0*Math.PI], [1.3*Math.PI, Math.PI], [0.9*Math.PI, 0.6*Math.PI],[1.65*Math.PI, 1.92*Math.PI]];
         this.currPlat = 0;
+        this.camera_position = [8,5,2,-1,-4];
         this.tempPlatY = 16; // for temporary storing estimated y value of platforms, -6 go to the next platform
 
          // scoreboard 
@@ -81,6 +82,8 @@ export class Assignment3 extends Scene {
          //this.color = color(0.62, 0.89, 0.83, 1);
          this.color = color(0.10, 0.92, 0.91, 1);
          this.initial_camera_location = Mat4.look_at(vec3(0, 12, 30), vec3(0, 0, 0), vec3(0, 1, 0));
+
+        this.gameView = false;
     }
 
     set_colors() {
@@ -90,7 +93,10 @@ export class Assignment3 extends Scene {
 
     make_control_panel() {
         // Draw the scene's buttons, setup their actions and keyboard shortcuts, and monitor live measurements.
-        this.key_triggered_button("View whole system", ["Control", "0"], () => this.attached = () => this.initial_camera_location);
+        this.key_triggered_button("View whole system", ["Control", "0"], () => {
+            this.gameView = false;
+            this.attached = () => this.initial_camera_location
+        });
         this.new_line();
         this.key_triggered_button("rotate left", ["Control","a"], () => {
             if (this.angle-(Math.PI/30) < 0){
@@ -112,7 +118,10 @@ export class Assignment3 extends Scene {
             }
         });
         this.new_line();
-        this.key_triggered_button("Attach to ball", ["Control", "3"], () => this.attached = () => this.ball);
+        this.key_triggered_button("Attach to ball", ["Control", "3"], () => {
+            this.gameView = true;
+            this.attached = () => this.ball;
+        });
         this.key_triggered_button("Change Colors", ["Control", "w"], this.set_colors);
     }
 
@@ -123,7 +132,7 @@ export class Assignment3 extends Scene {
         let model_transform = Mat4.identity();
 
         model_transform = model_transform.times(Mat4.rotation(Math.PI/2,1,0,0))
-            .times(Mat4.scale(1,1,20));
+            .times(Mat4.scale(1,1,50));
         this.shapes.piler.draw(context, program_state, model_transform, this.materials.test);
 
 
@@ -133,6 +142,40 @@ export class Assignment3 extends Scene {
             .times(Mat4.translation(0,-7.5,0))
             .times(Mat4.rotation(Math.PI/15, 0, 1, 0))
             .times(Mat4.rotation(this.angle,0,1,0));
+
+        let top = platForm_transform;
+        let bottom = platForm_transform;
+        let red_zone = Mat4.identity();
+        red_zone = red_zone.times(Mat4.rotation(this.angle,0,1,0))
+            .times(Mat4.rotation(Math.PI/2, 0, 1, 0))
+            .times(Mat4.rotation(Math.PI/3, 0, 1, 0))
+            .times(Mat4.scale(2.3,1,2.3))
+            .times(Mat4.translation(0.8,13.5,0.4));
+
+        this.shapes.deathZone.draw(context, program_state, red_zone, this.materials.test.override({color: red}));
+        // this.shapes.platform.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
+        // console.log(platForm_transform[1][3]);
+
+
+        top = top.times(Mat4.rotation(Math.PI/2, 0, 1, 0))
+            .times(Mat4.translation(0,21,0));
+        //.times(Mat4.rotation(Math.PI/randAngle,0,1,0));
+        this.shapes.platform.draw(context, program_state, top, this.materials.test.override({color: grey}));
+
+
+        this.shapes.platform.draw(context, program_state, platForm_transform.times(Mat4.rotation(Math.PI/5, 0, 1, 0)), this.materials.test.override({color: grey}));
+
+        bottom = bottom.times(Mat4.rotation(Math.PI/5, 0, 1, 0))
+            .times(Mat4.translation(0,-3,0));
+        this.shapes.platform.draw(context, program_state, bottom, this.materials.test.override({color: grey}));
+
+        bottom = bottom.times(Mat4.rotation(-Math.PI/2, 0, 1, 0))
+            .times(Mat4.translation(0,-3,0));
+        this.shapes.platform.draw(context, program_state, bottom, this.materials.test.override({color: grey}));
+
+        bottom = bottom.times(Mat4.rotation(Math.PI/5, 0, 1, 0))
+            .times(Mat4.translation(0,-3,0));
+        this.shapes.platform.draw(context, program_state, bottom, this.materials.test.override({color: grey}));
 
 
         platForm_transform = platForm_transform.times(Mat4.translation(0,3,0));
@@ -148,7 +191,7 @@ export class Assignment3 extends Scene {
         platForm1_transform = platForm1_transform.times(Mat4.rotation(Math.PI/2, 0, 1, 0))
             .times(Mat4.translation(0,3,0));
                                                 //.times(Mat4.rotation(Math.PI/11,0,1,0));
-        let y1 = platForm_transform[1][3];
+        let y1 = platForm1_transform[1][3];
         this.platform_y.add(y1);
         this.shapes.platform.draw(context, program_state, platForm1_transform, this.materials.test.override({color: grey}));
 
@@ -160,14 +203,14 @@ export class Assignment3 extends Scene {
             .times(Mat4.translation(0.8,-1.5,0.4));
 
         this.shapes.deathZone.draw(context, program_state, deathZone_transform, this.materials.test.override({color: red}));
-        this.shapes.platform.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
+       // this.shapes.platform.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
         // console.log(platForm_transform[1][3]);
 
 
 
 
 
-        platForm2_transform = platForm2_transform.times(Mat4.rotation(-Math.PI/15, 0, 1, 0))
+        platForm2_transform = platForm2_transform.times(Mat4.rotation(Math.PI/8, 0, 1, 0))
             .times(Mat4.translation(0,6,0));
                                                 //.times(Mat4.rotation(Math.PI/randAngle,0,1,0));
         let y2 = platForm_transform[1][3];
@@ -183,7 +226,7 @@ export class Assignment3 extends Scene {
 
         this.shapes.deathZone.draw(context, program_state, deathZone_transform, this.materials.test.override({color: red}));
 
-        platForm3_transform = platForm3_transform.times(Mat4.rotation(-Math.PI/3, 0, 1, 0))
+        platForm3_transform = platForm3_transform.times(Mat4.rotation(-Math.PI/8, 0, 1, 0))
             .times(Mat4.translation(0,9,0));
 
         let y3 = platForm_transform[1][3];
@@ -192,20 +235,38 @@ export class Assignment3 extends Scene {
 
         deathZone_transform = deathZone_transform.times(Mat4.translation(-0.8, -1.5, -0.4))
             .times(Mat4.scale(1/2.3, 1, 1/2.3))
-            .times(Mat4.rotation(-Math.PI/4, 0, 1, 0))
+            .times(Mat4.rotation(-Math.PI/9, 0, 1, 0))
             .times(Mat4.scale(2.3,1,2.3))
             .times(Mat4.translation(0.8,4.5,0.3));
 
         this.shapes.deathZone.draw(context, program_state, deathZone_transform, this.materials.test.override({color: red}));
 
 
-        platForm4_transform = platForm4_transform.times(Mat4.translation(0,12,0));
+        platForm4_transform = platForm4_transform.times(Mat4.rotation(-Math.PI/1.5, 0, 1,0 ))
+            .times(Mat4.translation(0,12,0));
         let y4 = platForm_transform[1][3];
         this.platform_y.add(y4);
         this.shapes.platform.draw(context, program_state, platForm4_transform, this.materials.test.override({color: grey}));
 
-        platForm_transform = platForm4_transform.times(Mat4.translation(0,3,0));
+        // top layer:
+
+        platForm_transform = platForm4_transform.times(Mat4.rotation(Math.PI/1.5, 0, 1, 0))
+            .times(Mat4.translation(0,3,0));
+
         this.shapes.platform.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
+
+        platForm_transform = platForm4_transform.times(Mat4.rotation(Math.PI/2, 0, 1, 0))
+            .times(Mat4.translation(0,9,0));
+        this.shapes.platform.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
+
+        platForm_transform = platForm4_transform.times(Mat4.rotation(Math.PI/1.5, 0, 1, 0))
+            .times(Mat4.translation(0,3,0));
+        this.shapes.platform.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
+
+        platForm_transform = platForm4_transform.times(Mat4.rotation(Math.PI/1.5, 0, 1, 0))
+            .times(Mat4.translation(0,3,0));
+        this.shapes.platform.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
+
 
 
     }
@@ -262,40 +323,50 @@ export class Assignment3 extends Scene {
         // check if at gap
         // change to angle of specific platform, platform # + 1
         //console.log(this.angle);
+        let y_coord;
         if (this.angle < this.platform_angle[this.currPlat][0] && this.angle > this.platform_angle[this.currPlat][1]) {
-        //if ((this.angle > Math.PI/3 && this.angle < Math.PI/2 )) {
-
-                // drop to next level, score + 1
-                if (this.ball_pos[1] < -2) {
-                    this.ball_pos[1] = 18;
-                } else {
-                    this.ball_pos = this.ball_pos.plus(this.ball_speed.times(this.dt));
-                }
-                this.ball_speed[1] = this.ball_speed[1] + this.dt * this.ball_g;
+            //if ((this.angle > Math.PI/3 && this.angle < Math.PI/2 )) {
+            //console.log(this.ball_pos[1]);
+            if (this.gameView) {
+                this.attached = () => this.ball;
+            }
+            // drop to next level, score + 1
+            if (this.ball_pos[1] < -5) {
+                this.ball_pos[1] = 22.5;
+            } else {
+            this.ball_pos = this.ball_pos.plus(this.ball_speed.times(this.dt));
+            }
+               this.ball_speed[1] = this.ball_speed[1] + this.dt * this.ball_g;
 
                 ball_transform = ball_transform.times(Mat4.scale(0.5,0.5,0.5))
                     .times(Mat4.translation(this.ball_pos[0], this.ball_pos[1], this.ball_pos[2]));
                 // change according to the total number of platforms
+
                 if (this.currPlat === 4) {
                     this.currPlat = 0;
                 } else {
                     this.currPlat += 1;
                 }
                 // change according to the y coordinate of lowest platform
-                if (this.tempPlatY === -8) {
+
+                if (this.tempPlatY === -8 ) {
                     this.tempPlatY = 16;
                 } else {
-                    this.tempPlatY -= 6
+                    this.tempPlatY -= 6;
                 }
 
                 this.score += 1;
+
         }
         else if (this.angle < this.deathZone_angle[this.currPlat][0] && this.angle > this.deathZone_angle[this.currPlat][1]) {
             if (this.lives === 0) {
                 // "game over"
+                this.gameOver = Mat4.inverse(Mat4.identity().times(Mat4.translation(0,2.5,25)));
                 let game_over = Mat4.identity().times(Mat4.translation(-21,16,4,0))
                         .times(Mat4.scale(7,7,2,5))
                         .times(Mat4.translation(3,-2,1,0));
+                this.attached = () => this.gameOver;
+                this.gameView = false;
                 this.shapes.square.draw(context, program_state, game_over, this.materials.gameover);
             }
             else { // keep bouncing but lives -1
@@ -309,6 +380,11 @@ export class Assignment3 extends Scene {
                     this.ball_pos[1] = this.tempPlatY;
                     this.ball_speed[1] = this.ball_maxspeed;
                     this.lives -= 1;
+                    if (this.gameView){
+                        y_coord= this.camera_position[this.currPlat];
+                        this.platform = Mat4.inverse(Mat4.identity().times(Mat4.translation(0,y_coord,18.7)));
+                        this.attached = () => this.platform;
+                    }
                     this.ball_sound.play();
                     
                 }
@@ -331,21 +407,26 @@ export class Assignment3 extends Scene {
                 if (this.ball_pos[1] < this.tempPlatY){
                     this.ball_pos[1] = this.tempPlatY;
                     this.ball_speed[1] = this.ball_maxspeed;
-                    this.ball_sound.play();
+                    if (this.gameView){
+                        y_coord = this.camera_position[this.currPlat];
+                        this.platform = Mat4.inverse(Mat4.identity().times(Mat4.translation(0,y_coord,18.7)));
+                        this.attached = () => this.platform;
+                    }
+                   this.ball_sound.play();
                 }
                 ball_transform = ball_transform.times(Mat4.scale(0.5,0.5,0.5))
                     .times(Mat4.translation(this.ball_pos[0], this.ball_pos[1], this.ball_pos[2]));
         }
 
-        console.log(this.angle);
+        //console.log(this.ball_pos[1]);
         //console.log(this.platform_y)
         // red zone (bounce and this.lives - 1)
-        
+
 
         this.shapes.sphere.draw(context, program_state, ball_transform, this.materials.sphere.override({color:this.color}));
 
 
-        this.ball = Mat4.inverse(ball_transform.times(Mat4.translation(0,0,20)));
+        this.ball = Mat4.inverse(ball_transform.times(Mat4.translation(0,0,30)));
 
         if(this.attached !== undefined){
             program_state.camera_inverse =  this.attached();
