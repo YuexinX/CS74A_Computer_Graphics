@@ -14,7 +14,7 @@ export class Assignment3 extends Scene {
     constructor() {
         // constructor(): Scenes begin by populating initial values like the Shapes and Materials they'll need.
         super();
-
+        this.ball_sound = new Audio("assets/ball.mp3"); 
         // At the beginning of our program, load one of each of these shape definitions onto the GPU.
         this.shapes = {
             torus: new defs.Torus(15, 15),
@@ -303,6 +303,8 @@ export class Assignment3 extends Scene {
                     this.ball_pos[1] = this.tempPlatY;
                     this.ball_speed[1] = this.ball_maxspeed;
                     this.lives -= 1;
+                    this.ball_sound.play();
+                    
                 }
                 ball_transform = ball_transform.times(Mat4.scale(0.5, 0.5, 0.5))
                     .times(Mat4.translation(this.ball_pos[0], this.ball_pos[1], this.ball_pos[2]));
@@ -323,6 +325,7 @@ export class Assignment3 extends Scene {
                 if (this.ball_pos[1] < this.tempPlatY){
                     this.ball_pos[1] = this.tempPlatY;
                     this.ball_speed[1] = this.ball_maxspeed;
+                    this.ball_sound.play();
                 }
                 ball_transform = ball_transform.times(Mat4.scale(0.5,0.5,0.5))
                     .times(Mat4.translation(this.ball_pos[0], this.ball_pos[1], this.ball_pos[2]));
