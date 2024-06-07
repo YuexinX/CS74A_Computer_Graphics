@@ -293,8 +293,8 @@ export class Assignment3 extends Scene {
         else if (this.angle < this.deathZone_angle[this.currPlat][0] && this.angle > this.deathZone_angle[this.currPlat][1]) {
             if (this.lives === 0) {
                 // "game over"
-                let game_over = Mat4.identity().times(Mat4.translation(-21,16,4,0))
-                        .times(Mat4.scale(7,7,2,5))
+                let game_over = Mat4.identity().times(Mat4.translation(-18,15,4,0))
+                        .times(Mat4.scale(6,6,2,5))
                         .times(Mat4.translation(3,-2,1,0));
                 this.shapes.square.draw(context, program_state, game_over, this.materials.gameover);
             }
