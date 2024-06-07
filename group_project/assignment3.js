@@ -25,6 +25,7 @@ export class Assignment3 extends Scene {
             piler: new defs.Capped_Cylinder(20,20),
             platform: new Shape_From_File("./assets/platform.obj"),
             background: new defs.Cube(),
+            square: new defs.Square(),
             deathZone: new Shape_From_File("./assets/deathZone-test.obj")
         };
 
@@ -46,6 +47,8 @@ export class Assignment3 extends Scene {
                 specularity: 0,
                 texture: new Texture("assets/blue-sky2.png", "NEAREST")
             }),
+            gameover: new Material(new defs.Textured_Phong(1), 
+                {ambient: 1, specularity: 0, texture: new Texture("assets/gameover.png")}),
         }
         this.angle = 0;
 
@@ -76,7 +79,7 @@ export class Assignment3 extends Scene {
          this.livesElement.appendChild(this.livesNode);
 
 
-        this.initial_camera_location = Mat4.look_at(vec3(0, 5, 40), vec3(0, 0, 0), vec3(0, 1, 0));
+        this.initial_camera_location = Mat4.look_at(vec3(0, 5, 30), vec3(0, 0, 0), vec3(0, 1, 0));
     }
 
     make_control_panel() {
@@ -250,7 +253,6 @@ export class Assignment3 extends Scene {
        //ball_transform = ball_transform.times(Mat4.scale(0.4,0.4,0.4))
          //   .times(Mat4.translation(0,18-fall_factor,5));
 
-
         // check if at gap
         // change to angle of specific platform, platform # + 1
         //console.log(this.angle);
@@ -269,10 +271,11 @@ export class Assignment3 extends Scene {
         }
         else if (this.angle < this.deathZone_angle[this.currPlat][0] && this.angle > this.deathZone_angle[this.currPlat][1]) {
             if (this.lives === 0) {
-                // NEED IMPLEMENTATION
                 // "game over"
-                // PROBLEM: lives will drop so fast that it immediately dies
-                // Potential solution: Move player to the very beginning of game, move ball up.
+                let game_over = Mat4.identity().times(Mat4.translation(-21,16,4,0))
+                        .times(Mat4.scale(7,7,2,5))
+                        .times(Mat4.translation(3,-2,1,0));
+                this.shapes.square.draw(context, program_state, game_over, this.materials.gameover);
             }
             else { // keep bouncing but lives -1
                 this.ball_pos = this.ball_pos.plus(this.ball_speed.times(this.dt));
