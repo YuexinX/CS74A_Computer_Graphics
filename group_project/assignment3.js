@@ -63,8 +63,8 @@ export class Assignment3 extends Scene {
         this.init = true;
         this.randAngle = 1;
         //this.platform_angle = [[1.8*Math.PI, 1.5*Math.PI],[0.23*Math.PI, 1.9*Math.PI],[1.96*Math.PI, 1.65*Math.PI],[1.36*Math.PI, 1.03*Math.PI]];
-        this.platform_angle = [[1.8*Math.PI, 1.5*Math.PI],[1.0*Math.PI, 0.7*Math.PI],[1.96*Math.PI, 1.65*Math.PI],[1.36*Math.PI, 1.03*Math.PI]];
-        this.deathZone_angle = [[], [1.6*Math.PI, 1.3*Math.PI], [1.3*Math.PI, Math.PI], [0.9*Math.PI, 0.6*Math.PI]];
+        this.platform_angle = [[1.8*Math.PI, 1.5*Math.PI],[2.0*Math.PI, 1.9*Math.PI],[1.9*Math.PI, 1.65*Math.PI],[1.36*Math.PI, 1.03*Math.PI],[1.92*Math.PI, 1.6*Math.PI]];
+        this.deathZone_angle = [[1.3*Math.PI, 1.6*Math.PI], [1.6*Math.PI, 1.3*Math.PI], [1.3*Math.PI, Math.PI], [0.9*Math.PI, 0.6*Math.PI],[1.65*Math.PI, 1.92*Math.PI]];
         this.currPlat = 0;
         this.tempPlatY = 16; // for temporary storing estimated y value of platforms, -6 go to the next platform
 
@@ -260,13 +260,28 @@ export class Assignment3 extends Scene {
         //if ((this.angle > Math.PI/3 && this.angle < Math.PI/2 )) {
 
                 // drop to next level, score + 1
-                this.ball_pos = this.ball_pos.plus(this.ball_speed.times(this.dt));
+                if (this.ball_pos[1] < -2) {
+                    this.ball_pos[1] = 18;
+                } else {
+                    this.ball_pos = this.ball_pos.plus(this.ball_speed.times(this.dt));
+                }
                 this.ball_speed[1] = this.ball_speed[1] + this.dt * this.ball_g;
 
                 ball_transform = ball_transform.times(Mat4.scale(0.5,0.5,0.5))
                     .times(Mat4.translation(this.ball_pos[0], this.ball_pos[1], this.ball_pos[2]));
-                this.currPlat += 1;
-                this.tempPlatY -= 6;
+                // change according to the total number of platforms
+                if (this.currPlat === 4) {
+                    this.currPlat = 0;
+                } else {
+                    this.currPlat += 1;
+                }
+                // change according to the y coordinate of lowest platform
+                if (this.tempPlatY === -8) {
+                    this.tempPlatY = 16;
+                } else {
+                    this.tempPlatY -= 6
+                }
+
                 this.score += 1;
         }
         else if (this.angle < this.deathZone_angle[this.currPlat][0] && this.angle > this.deathZone_angle[this.currPlat][1]) {
