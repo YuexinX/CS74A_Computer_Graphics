@@ -78,8 +78,14 @@ export class Assignment3 extends Scene {
          this.scoreElement.appendChild(this.scoreNode);
          this.livesElement.appendChild(this.livesNode);
 
+         //this.color = color(0.62, 0.89, 0.83, 1);
+         this.color = color(0.10, 0.92, 0.91, 1);
+         this.initial_camera_location = Mat4.look_at(vec3(0, 12, 30), vec3(0, 0, 0), vec3(0, 1, 0));
+    }
 
-        this.initial_camera_location = Mat4.look_at(vec3(0, 5, 30), vec3(0, 0, 0), vec3(0, 1, 0));
+    set_colors() {
+        this.color = color(Math.random(), Math.random(), Math.random(), 1.0);
+        console.log(this.color)
     }
 
     make_control_panel() {
@@ -107,7 +113,7 @@ export class Assignment3 extends Scene {
         });
         this.new_line();
         this.key_triggered_button("Attach to ball", ["Control", "3"], () => this.attached = () => this.ball);
-
+        this.key_triggered_button("Change Colors", ["Control", "w"], this.set_colors);
     }
 
     draw_unit(context, program_state){
@@ -227,7 +233,7 @@ export class Assignment3 extends Scene {
 
         //background
         let background_transform = Mat4.identity();
-        background_transform = background_transform.times(Mat4.scale(20,20,0.8))
+        background_transform = background_transform.times(Mat4.scale(45,40,0.8))
             .times(Mat4.translation(0,0,-20));
         this.shapes.background.draw(context, program_state, background_transform, this.materials.default);
 
@@ -336,7 +342,7 @@ export class Assignment3 extends Scene {
         // red zone (bounce and this.lives - 1)
         
 
-        this.shapes.sphere.draw(context, program_state, ball_transform, this.materials.sphere);
+        this.shapes.sphere.draw(context, program_state, ball_transform, this.materials.sphere.override({color:this.color}));
 
 
         this.ball = Mat4.inverse(ball_transform.times(Mat4.translation(0,0,20)));
