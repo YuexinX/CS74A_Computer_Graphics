@@ -110,7 +110,7 @@ export class Assignment3 extends Scene {
         let model_transform = Mat4.identity();
 
         model_transform = model_transform.times(Mat4.rotation(Math.PI/2,1,0,0))
-            .times(Mat4.scale(1,1,20));
+            .times(Mat4.scale(1,1,30));
         this.shapes.piler.draw(context, program_state, model_transform, this.materials.test);
 
 
@@ -191,8 +191,22 @@ export class Assignment3 extends Scene {
         this.platform_y.add(y4);
         this.shapes.platform.draw(context, program_state, platForm4_transform, this.materials.test.override({color: grey}));
 
-        platForm_transform = platForm4_transform.times(Mat4.translation(0,3,0));
+
+        deathZone_transform = deathZone_transform.times(Mat4.translation(-0.8, -4.5, -0.3))
+            .times(Mat4.scale(1/2.3, 1, 1/2.3))
+            .times(Mat4.rotation(Math.PI/4, 0, 1, 0))
+            .times(Mat4.rotation(Math.PI/3, 0, 1, 0))
+            .times(Mat4.rotation(Math.PI/15, 0, 1, 0))
+            .times(Mat4.scale(2.3,1,2.3))
+            .times(Mat4.translation(0.8,10.5,0.3));
+
+        this.shapes.deathZone.draw(context, program_state, deathZone_transform, this.materials.test.override({color: red}));
+
+
+        platForm_transform = platForm4_transform.times(Mat4.rotation(Math.PI/2, 0, 1, 0))
+            .times(Mat4.translation(0,3,0));
         this.shapes.platform.draw(context, program_state, platForm_transform, this.materials.test.override({color: grey}));
+
 
 
     }
@@ -246,7 +260,7 @@ export class Assignment3 extends Scene {
        //ball_transform = ball_transform.times(Mat4.scale(0.4,0.4,0.4))
          //   .times(Mat4.translation(0,18-fall_factor,5));
 
-
+        console.log(this.platform_y);
         // check if at gap
         // change to angle of specific platform, platform # + 1
         //console.log(this.angle);
@@ -262,7 +276,7 @@ export class Assignment3 extends Scene {
             // bounce effect
             this.ball_pos = this.ball_pos.plus(this.ball_speed.times(this.dt));
             this.ball_speed[1] = this.ball_speed[1] + this.dt * this.ball_g;
-            //console.log(this.platform_y);
+
             // use the array, select the next value if the ball falls to the next platform
             // steps: 1. randomly switch effects of falling and bouncing
             // 2. array for y values & rotation angles array, angle variable
