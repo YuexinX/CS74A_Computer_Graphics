@@ -284,12 +284,13 @@ export class Assignment3 extends Scene {
                 if (this.ball_pos[1] < this.tempPlatY) {
                     this.ball_pos[1] = this.tempPlatY;
                     this.ball_speed[1] = this.ball_maxspeed;
+                    this.lives -= 1;
                 }
                 ball_transform = ball_transform.times(Mat4.scale(0.5, 0.5, 0.5))
                     .times(Mat4.translation(this.ball_pos[0], this.ball_pos[1], this.ball_pos[2]));
 
                 // lives -1
-                this.lives -= 1;
+                //this.lives -= 1;
             }
         }
         else {
